@@ -1,41 +1,39 @@
-import userroutes from "./routes/userroutes.js";
 import express from "express";
+import cors from "cors";
 import cookieParser from "cookie-parser";
-import blogroutes from "./routes/blogroutes.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
+import userroutes from "./routes/userroutes.js";
+import blogroutes from "./routes/blogroutes.js";
+
 dotenv.config();
-import cors from "cors";
 
 const app = express();
+
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://your-frontend.onrender.com"
+    ],
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(cookieParser());
-
-// Debug middleware to log all blog routes
-app.use("/api/blogs", (req, res, next) => {
-  console.log(`Blog Route: ${req.method} ${req.path}`);
-  next();
-});
 
 app.use("/api/users", userroutes);
 app.use("/api/blogs", blogroutes);
 
 mongoose
-  .connect("mongodb://localhost:27017/blogtalentio")
-  .then(() => {
-    console.log("connected to db");
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-app.listen(5001, () => {
-  console.log("server started on port 5001");
-});
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Atlas connected"))
+  .catch((error) => console.error("MongoDB error:", error));
 
-export default app;
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
